@@ -27,16 +27,28 @@
     "node": "16.x"
   },
   "main": "index.ts",
+  "mocha": {
+    "diff": true,
+    "extension": ["js"],
+    "slow": "75",
+    "timeout": "20000"
+  },
   "scripts": {
     "start": "tsc; node ./dist/index.js",
     "build": "tsc",
     "nodemon": "tsc; ./node_modules/nodemon/bin/nodemon.js index",
-    "test": "mocha ./tests",
+    "test": "mocha ./test/*.e2e.js",
     "lint": "eslint .",
-    "lint:fix": "eslint --fix ."
+    "lint:fix": "eslint --fix .",
+    "migrate-up": "node_modules/sequelize-cli/lib/sequelize db:migrate",
+    "migrate-create": "node_modules/sequelize-cli/lib/sequelize migration:create --name",
+    "migrate-down": "node_modules/sequelize-cli/lib/sequelize db:migrate:undo:all",
+    "seed-up": "node_modules/sequelize-cli/lib/sequelize db:seed:all",
+    "seed-down": "node_modules/sequelize-cli/lib/sequelize db:seed:undo:all"
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.4",
+    "@types/sequelize": "^4.28.14",
     "@types/socket.io": "^3.0.2",
     "compose-middleware": "^5.0.1",
     "dotenv-flow": "^3.2.0",
@@ -48,7 +60,11 @@
     "mongoose": "^6.4.6",
     "morgan": "^1.9.1",
     "multer": "^1.4.3",
+    "mysql2": "^2.3.3",
     "nodemailer": "^6.7.0",
+    "sequelize": "^6.25.7",
+    "sequelize-cli": "^6.5.2",
+    "sequelize-typescript": "^2.1.5",
     "socket.io": "^4.3.1",
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.3"

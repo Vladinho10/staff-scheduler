@@ -5,9 +5,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 const rootPath = process.cwd();
 dotEnvConfig.config({ path: `${rootPath}/envs` });
 
-export const db = {
-    uri: `${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
-};
+export * from './db';
 export const port: string = process.env.PORT;
 export const jwtSecret = `${process.env.JWT_SECRET}`;
 export const files = `${rootPath}/files`;

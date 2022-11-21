@@ -1,4 +1,4 @@
-import Express, { Response, Send } from 'express';
+import Express, { Request, Response, Send } from 'express';
 
 import { general } from '../constants';
 
@@ -14,6 +14,10 @@ export type CustomResponse = Response & {
     unsupportedMediaType?: Send;
     unprocessableEntity?: Send;
     internalServerError?: Send;
+}
+
+export type CustomRequest = Request & {
+    user?: any
 }
 
 const respond = (req:Express.Request, res:Express.Response, next:Express.NextFunction) => {

@@ -1,12 +1,12 @@
 import http from 'http';
 
+import { Sequelize } from 'sequelize';
 import { Server } from 'socket.io';
 import express from 'express';
 import log4js from 'log4js';
-import mongoose from 'mongoose';
 
 import { CustomError } from './services';
-import { db, files, port } from './configs';
+import { dbOptions, files, port } from './configs';
 import routers from './routers';
 
 const logger = log4js.getLogger('ENTRY.index');
@@ -17,8 +17,9 @@ globalThis.io = new Server(server);
 
 globalThis.CustomError = CustomError;
 
-(async () => await mongoose.connect(db.uri))()
-    .catch(err => logger.error({ err }));
+const sequelize = new Sequelize(dbOptions.database, dbOptions.username, dbOptions.password, dbOptions);
+(async () => await sequelize.authenticate())()
+    .catch(err => logger.error('Hey, unable to connect to the database', { err }));
 
 // you can specify a path `${origin}/yourPath` or by default it's `${origin}`
 app.use(express.static(files));
