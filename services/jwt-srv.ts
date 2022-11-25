@@ -1,8 +1,8 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 
 import { jwtSecret } from '../configs';
 
-const options = {
+const options: SignOptions = {
     // expiresIn: '1h',
     algorithm: 'HS256',
 };
@@ -14,13 +14,12 @@ export class JwtSrv {
             : jwt.sign(JSON.stringify(payload), jwtSecret, options);
     }
 
-    static verify(token) {
+    static async verify(token) {
         try {
-            return jwt.verify(token, jwtSecret);
+            return  jwt.verify(token, jwtSecret);
         } catch (err) {
-            // logger.error({ errMessage: err.message });
+            console.error({ errMessage: err.message });
         }
-
-        return {};
     }
 }
+

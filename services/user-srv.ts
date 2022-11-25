@@ -1,73 +1,78 @@
-import { objects } from '../helpers';
+
+import { crypt, objects } from '../helpers';
 import db from '../dal/models';
 
 import { JwtSrv } from './jwt-srv';
 
 export class UserSrv {
-    static async readMany(query, options) {
-        return db.User.find(query)
-            .limit(+options.limit || 10)
-            .skip(+options.offset)
-            .sort(options.sort);
+    static async readUsersWithSchedules() {
+        const users = await db.User.findAll({
+            where: { role: 'user' },
+            include: [{
+                required: true,
+                model: db.Schedule, as: 'schedules',
+            }],
+        });
+        const serializeUsers = await users.map(user => {
+            const { schedules } = user;
+            let timeAmount = 0;
+
+            for (const schedule of schedules) {
+                timeAmount += schedule.timeLength;
+            }
+
+            return  {
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                workHoursAmount: timeAmount,
+            };
+        });
+
+        return serializeUsers.sort((userA, userB) => userA.workHoursAmount > userB.workHoursAmount);
     }
 
     static async readOne(query) {
-        const user = await db.User.findOne({ where: { id: query._id } });
-        console.log({ user });
-
-        const json = db.User.toJSON();
-
-        console.log({ json });
-        return json;
+        return  await db.User.findOne({
+            where: { id: query._id, role: 'user' },
+            attributes: { exclude: ['password'] },
+        });
     }
 
-    static async createOne(body) {
-        const user = await db.User.create(body);
+    static async signUp(body) {
+        body.password = crypt.encrypt(body.password);
+
+        const company = await db.Company.findOne({ where: {
+            name: body.companyName,
+        } });
+
+        const user = await db.User.create({ ...body, companyId: company.dataValues.id });
+
         return {
-            user,
+            user: objects.skip(user.dataValues, ['password']),
             auth: {
-                token: JwtSrv.sign({ id: db.User.id }),
+                accessToken: JwtSrv.sign({ id: user.id }),
             },
         };
     }
 
-    static async createMany(body) {
-        return db.User.insertMany(body);
+    static async signIn(user) {
+        return {
+            user,
+            auth: {
+                accessToken: JwtSrv.sign({ id: user.id }),
+            },
+        };
     }
 
     static async updateOne(id, body) {
-        const newData = await objects.pick(body, ['name', 'age']);
-
-        const user = await db.User.findOne({ where: { id } });
-
-        if (!user) {
-            return { message: 'error' };
-        }
-        for (const key in newData) {
-            user[key] = newData[key];
-        }
-        return db.User.save();
+        return db.User.update(body, { where: { id } });
     }
 
-    static async updateMany(body) {
-        const newData = objects.pick(body.updatingFields, ['name', 'age', 'gender']);
-
-        const { nModified } = (await db.User.updateMany(
-            body.filter, // find criteria
-            newData, // changing data
-        ));
-
-        return (nModified > 0);
-    }
-
-    static async deleteOne(_id) {
-        const { deletedCount } = (await db.User.deleteOne({ _id }));
-
-        return (deletedCount > 0);
-    }
-
-    static async deleteMany(ids) {
-        const { deletedCount } = (await db.User.deleteMany({ _id: { $in: ids } }));
+    static async deleteOne(id) {
+        const deletedCount = (await db.User.destroy({
+            where: { id },
+        }));
 
         return (deletedCount > 0);
     }

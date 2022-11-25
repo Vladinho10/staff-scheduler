@@ -163,7 +163,8 @@
         ]
       }
     ],
-    "node/no-process-env": "error"
+    "node/no-process-env": "error",
+    "@typescript-eslint/no-explicit-any": "off"
   },
   "overrides": [
     {

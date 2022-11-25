@@ -23,6 +23,7 @@ const sequelize = new Sequelize(dbOptions.database, dbOptions.username, dbOption
 
 // you can specify a path `${origin}/yourPath` or by default it's `${origin}`
 app.use(express.static(files));
+// app.use(auth);
 app.use('/', routers);
 app.set('view engine', 'ejs'); // by default ejs files in root's 'views' directory
 

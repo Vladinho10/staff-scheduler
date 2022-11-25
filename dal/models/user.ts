@@ -1,4 +1,5 @@
 'use strict';
+
 export default function (sequelize, DataTypes) {
     const User = sequelize.define(
         'User',
@@ -9,17 +10,40 @@ export default function (sequelize, DataTypes) {
                 type: DataTypes.UUID,
                 defaultValue: DataTypes.UUIDV4,
             },
-            age: {
-                type: DataTypes.INTEGER,
-            },
-            name: {
+            email: {
+                allowNull: false,
                 type: DataTypes.STRING,
+            },
+            firstName: {
+                allowNull: true,
+                type: DataTypes.STRING,
+            },
+            lastName: {
+                allowNull: true,
+                type: DataTypes.STRING,
+            },
+            password: {
+                allowNull: false,
+                type: DataTypes.STRING,
+            },
+            role: {
+                defaultValue: 'user',
+                type: DataTypes.ENUM('user', 'admin'),
             },
             createdAt: {
                 type: DataTypes.BIGINT,
             },
             updatedAt: {
                 type: DataTypes.BIGINT,
+            },
+            companyId: {
+                type: DataTypes.UUID,
+                allowNull: true,
+                defaultValue: null,
+                references: {
+                    model: 'company',
+                    key: 'id',
+                },
             },
         },
         {
@@ -35,6 +59,13 @@ export default function (sequelize, DataTypes) {
 
         model.updatedAt = new Date().getTime();
     });
+
+    User.associate = function (models) {
+        User.belongsTo(models.Company, { foreignKey: 'companyId', as: 'company' });
+    };
+    User.associate = function (models) {
+        User.hasMany(models.Schedule, { foreignKey: 'userId', as: 'schedules' });
+    };
 
     return User;
 }
